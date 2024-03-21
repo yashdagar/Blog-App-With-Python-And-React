@@ -60,12 +60,12 @@ def main():
     @cross_origin(origin="http://localhost:3000", headers=["Content-Type"])
     @app.route("/delete_post", methods=['POST'])
     def deletePost():
-        users.deletePost()
+        return users.deletePost()
 
     @cross_origin(origin="http://localhost:3000", headers=["Content-Type"])
     @app.route("/update_post", methods=['POST'])
     def updatePost():
-        users.updatePost()
+        return users.updatePost()
 
     app.run()
 
