@@ -1,5 +1,7 @@
 from flask import request, jsonify
 
+from backend.post_model import Post
+
 
 def isAdmin():
     username = request.json.get("username", "").strip().lower()
@@ -15,32 +17,17 @@ def isAdmin():
 
 def getUserPosts():
     with open("posts.txt") as file:
-        posts = []
-        for post in file.read().split("\n"):
-            if post.strip() == "": continue
-            values = post.split("~")
-            username = values[0]
-            head = values[1]
-            body = values[2]
-            tags = [i for i in values[3].split("^")]
-            postTime = values[4]
-            likes = [i for i in values[5].split("/") if i != ""]
-            posts.append({
-                "username": username,
-                "head": head,
-                "tags": tags,
-                "body": body,
-                "time": postTime,
-                "likes": likes,
-            })
+        posts = Post.get_posts(file)
+        for post in posts:
+            posts.append(post)
 
         userPosts = {}
         for post in posts:
-            username, head, tags, body, time, likes = post.values()
+            username = post.get_username()
             if username not in userPosts:
-                userPosts[username] = [post]
+                userPosts[username] = [post.to_json()]
             else:
-                userPosts[username].append(post)
+                userPosts[username].append(post.to_json())
 
     return jsonify({"message": "Posts loaded successfully", "posts": userPosts}), 200
 
@@ -52,23 +39,9 @@ def getReports():
 
     posts = []
     with open("posts.txt") as file:
-        for post in file.read().split("\n"):
-            if post.strip() == "": continue
-            if post.split("~")[4] in reports:
-                values = post.split("~")
-                username = values[0]
-                head = values[1]
-                body = values[2]
-                tags = [i for i in values[3].split("^")]
-                postTime = values[4]
-                likes = [i for i in values[5].split("/") if i != ""]
-                posts.append({
-                    "username": username,
-                    "head": head,
-                    "tags": tags,
-                    "body": body,
-                    "time": postTime,
-                    "likes": likes,
-                })
+        posts = Post.get_posts(file)
+        for post in posts:
+            if post.get_time() in reports:
+                posts.append(post.to_json())
 
     return jsonify({"message": "Posts loaded successfully", "posts": posts}), 200
